@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% if current_category %}{{ current_category.name }} Watches - LuxTime{% else %}All Watches - LuxTime{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>
+            {% if current_category %}
+                {{ current_category.name }} Watches
+            {% else %}
+                All Watches
+            {% endif %}
+        </h1>
+        {% if current_category and current_category.description %}
+        <p>{{ current_category.description }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<section class="watches-section">
+    <div class="container">
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filters-header">
+                <h3>Filter & Sort</h3>
+                <button class="filter-toggle" id="filter-toggle">
+                    <i class="fas fa-filter"></i> Filters
+                </button>
+            </div>
+
+            <div class="filters-content" id="filters-content">
+                <form method="GET" class="filters-form">
+                    {% if request.GET.search %}
+                    <input type="hidden" name="search" value="{{ request.GET.search }}">
+                    {% endif %}
+
+                    <div class="filter-group">
+                        <label>Category</label>
+                        <select name="category" class="filter-select">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.slug }}" {% if request.GET.category == category.slug %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Price Range</label>
+                        <div class="price-inputs">
+                            <input type="number" name="min_price" placeholder="Min" value="{{ min_price }}" class="price-input">
+                            <span>-</span>
+                            <input type="number" name="max_price" placeholder="Max" value="{{ max_price }}" class="price-input">
+                        </div>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                        <a href="{% url 'watches:watch_list' %}" class="btn btn-outline">Clear All</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results Info -->
+        <div class="results-info">
+            <p>Showing {{ page_obj.paginator.count }} watch{{ page_obj.paginator.count|pluralize }}</p>
+            {% if search_query %}
+            <p>Search results for: "<strong>{{ search_query }}</strong>"</p>
+            {% endif %}
+        </div>
+
+        <!-- Products Grid -->
+        {% if page_obj %}
+        <div class="products-grid">
+            {% for watch in page_obj %}
+            <div class="product-card">
+                <a href="{{ watch.get_absolute_url }}">
+                    <div class="product-image">
+                        {% if watch.image and watch.image.url %}
+                        <img src="{{ watch.image.url }}" alt="{{ watch.name }}">
+                        {% else %}
+                        <img src="{% static 'images/default-watch.jpg' %}" alt="{{ watch.name }}">
+                        {% endif %}
+                        <div class="product-overlay">
+                            <span class="view-details">View Details</span>
+                        </div>
+                        {% if watch.is_featured %}
+                        <div class="featured-badge">Featured</div>
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">{{ watch.name }}</h3>
+                        <p class="product-model">{{ watch.model_number }}</p>
+                        <p class="product-category">{{ watch.category.name }}</p>
+                        <p class="product-price">${{ watch.price }}</p>
+                        {% if watch.availability != 'in_stock' %}
+                        <span class="availability-badge {{ watch.availability }}">{{ watch.get_availability_display }}</span>
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" style="text-align:center; margin-top: 2rem;">
+            {% if page_obj.has_previous %}
+                <a class="btn btn-outline" href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}page={{ page_obj.previous_page_number }}">« Previous</a>
+            {% endif %}
+            <span style="margin: 0 1rem;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a class="btn btn-outline" href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}page={{ page_obj.next_page_number }}">Next »</a>
+            {% endif %}
+        </div>
+
+        {% else %}
+        <div class="no-results">
+            <i class="fas fa-search"></i>
+            <h3>No watches found</h3>
+            <p>Try adjusting your filters or search terms.</p>
+            <a href="{% url 'watches:watch_list' %}" class="btn btn-primary">View All Watches</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- existing styles remain as-is -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterToggle = document.getElementById('filter-toggle');
+    const filtersContent = document.getElementById('filters-content');
+
+    filterToggle.addEventListener('click', function() {
+        filtersContent.classList.toggle('active');
+    });
+});
+    
+</script>
+<style>
+   
+    /* --- Filters Section --- */
+    .filters-section {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      margin-bottom: 2.5rem;
+      padding: 1.5rem 2rem;
+      transition: all 0.3s ease;
+    }
+
+    /* Header */
+    .filters-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .filters-header h3 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: #222;
+      font-weight: 600;
+    }
+
+    .filter-toggle {
+      display: none;
+      background: #f0c040;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background 0.3s ease;
+    }
+
+    .filter-toggle:hover {
+      background: #ddb420;
+    }
+
+    /* Filters Content */
+    .filters-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* Input Groups */
+    .filter-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #333;
+      font-size: 0.95rem;
+    }
+
+    .filter-select,
+    .price-input {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.3s ease;
+      font-size: 0.95rem;
+    }
+
+    .filter-select:focus,
+    .price-input:focus {
+      border-color: #f0c040;
+    }
+
+    .price-inputs {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .filter-actions .btn {
+      padding: 0.65rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background-color: #f0c040;
+      color: #fff;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background-color: #ddb420;
+    }
+
+    .btn-outline {
+      background: none;
+      color: #333;
+      border: 2px solid #ccc;
+    }
+
+    .btn-outline:hover {
+      border-color: #999;
+      color: #000;
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 768px) {
+      .filter-toggle {
+        display: block;
+        margin-top: 1rem;
+        width: 100%;
+        max-width: 240px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .filters-content {
+        display: none;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease;
+      }
+
+      .filters-content.active {
+        display: grid;
+        max-height: 1000px;
+        margin-top: 1.5rem;
+      }
+
+      .filters-content {
+        grid-template-columns: 1fr;
+      }
+
+      .price-inputs {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .filter-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .filter-actions .btn {
+        width: 100%;
+        max-width: 260px;
+        margin: 0 auto;
+      }
+    }
+    </style>
+
+
+
+{% endblock %}

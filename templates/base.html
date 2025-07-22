@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LuxTime - Premium Watches{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Discover our collection of luxury watches with modern design and precision engineering.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}luxury watches, premium timepieces, modern design, precision{% endblock %}">
+
+    {% load static %}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <!-- Model Viewer for 3D models -->
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <a href="{% url 'watches:home' %}" class="brand-logo">
+                        <span class="brand-text">LuxTime</span>
+                    </a>
+                </div>
+
+                <div class="nav-menu" id="nav-menu">
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="{% url 'watches:home' %}" class="nav-link">Home</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a href="{% url 'watches:watch_list' %}" class="nav-link">Watches</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'watches:contact' %}" class="nav-link">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-actions">
+                    <form class="search-form" method="GET" action="{% url 'watches:watch_list' %}">
+                        <input type="text" name="search" placeholder="Search watches..." class="search-input" value="{{ request.GET.search }}">
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                    <div class="hamburger" id="hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Dynamic Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                {% for section in footer_sections %}
+                <div class="footer-section">
+                    <h3>{{ section.title }}</h3>
+                    <div class="footer-text">{{ section.content|safe }}</div>
+                    {% if section.links.all %}
+                    <ul class="footer-links">
+                        {% for link in section.links.all %}
+                        {% if link.is_active %}
+                        <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 LuxTime. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

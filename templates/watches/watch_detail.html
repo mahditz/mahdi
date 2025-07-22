@@ -1,0 +1,369 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ watch.name }} ({{ watch.model_number }}) - LuxTime{% endblock %}
+
+{% block meta_description %}{{ watch.description|truncatewords:20 }}{% endblock %}
+
+{% block content %}
+<div class="product-detail-section">
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="{% url 'watches:home' %}">Home</a>
+            <span>/</span>
+            <a href="{{ watch.category.get_absolute_url }}">{{ watch.category.name }}</a>
+            <span>/</span>
+            <span>{{ watch.name }}</span>
+        </nav>
+
+        <div class="product-detail-grid">
+            <!-- Product Images -->
+            <div class="product-images">
+                <div class="main-image">
+                    {% if watch.image and watch.image.url %}
+                    <img id="main-product-image" src="{{ watch.image.url }}" alt="{{ watch.name }}">
+                    {% else %}
+                    <img id="main-product-image" src="{% static 'images/default-watch.jpg' %}" alt="{{ watch.name }}">
+                    {% endif %}
+                </div>
+                
+                {% if watch.image_2 or watch.image_3 %}
+                <div class="image-thumbnails">
+                    {% if watch.image and watch.image.url %}
+                    <img class="thumbnail active" src="{{ watch.image.url }}" alt="{{ watch.name }}" onclick="changeImage('{{ watch.image.url }}')">
+                    {% else %}
+                    <img class="thumbnail active" src="{% static 'images/default-watch.jpg' %}" alt="{{ watch.name }}" onclick="changeImage('{% static 'images/default-watch.jpg' %}')">
+                    {% endif %}
+                    {% if watch.image_2 and watch.image_2.url %}
+                    <img class="thumbnail" src="{{ watch.image_2.url }}" alt="{{ watch.name }}" onclick="changeImage('{{ watch.image_2.url }}')">
+                    {% endif %}
+                    {% if watch.image_3 and watch.image_3.url %}
+                    <img class="thumbnail" src="{{ watch.image_3.url }}" alt="{{ watch.name }}" onclick="changeImage('{{ watch.image_3.url }}')">
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-info">
+                <div class="product-header">
+                    <h1 class="product-title">{{ watch.name }}</h1>
+                    <p class="product-model">Model: {{ watch.model_number }}</p>
+                    <p class="product-category">
+                        <a href="{{ watch.category.get_absolute_url }}">{{ watch.category.name }}</a>
+                    </p>
+                </div>
+
+                <div class="product-price-section">
+                    <span class="product-price">${{ watch.price }}</span>
+                    <span class="availability-status {{ watch.availability }}">
+                        {{ watch.get_availability_display }}
+                    </span>
+                </div>
+
+                <div class="product-description">
+                    <h3>Description</h3>
+                    <p>{{ watch.description }}</p>
+                </div>
+
+                {% if watch.get_features_list %}
+                <div class="product-features">
+                    <h3>Key Features</h3>
+                    <ul class="features-list">
+                        {% for feature in watch.get_features_list %}
+                        <li><i class="fas fa-check"></i> {{ feature }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="product-actions">
+                    {% if watch.availability == 'in_stock' %}
+                    <button class="btn btn-primary btn-large">Add to Cart</button>
+                    {% elif watch.availability == 'pre_order' %}
+                    <button class="btn btn-primary btn-large">Pre-Order Now</button>
+                    {% else %}
+                    <button class="btn btn-outline btn-large" disabled>Currently Unavailable</button>
+                    {% endif %}
+                    <button class="btn btn-outline">Add to Wishlist</button>
+                </div>
+
+                <div class="product-meta">
+                    <p><strong>Category:</strong> {{ watch.category.name }}</p>
+                    <p><strong>Model Number:</strong> {{ watch.model_number }}</p>
+                    <p><strong>Added:</strong> {{ watch.created_at|date:"F d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Related Products -->
+{% if related_watches %}
+<section class="related-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Related Watches</h2>
+            <p>You might also like these</p>
+        </div>
+        <div class="products-grid">
+            {% for related_watch in related_watches %}
+            <div class="product-card">
+                <a href="{{ related_watch.get_absolute_url }}">
+                    <div class="product-image">
+                        {% if related_watch.image and related_watch.image.url %}
+                        <img src="{{ related_watch.image.url }}" alt="{{ related_watch.name }}">
+                        {% else %}
+                        <img src="{% static 'images/default-watch.jpg' %}" alt="{{ related_watch.name }}">
+                        {% endif %}
+                        <div class="product-overlay">
+                            <span class="view-details">View Details</span>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">{{ related_watch.name }}</h3>
+                        <p class="product-model">{{ related_watch.model_number }}</p>
+                        <p class="product-price">${{ related_watch.price }}</p>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<style>
+.product-detail-section {
+    padding: 2rem 0;
+}
+
+.breadcrumb {
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+}
+
+.breadcrumb a {
+    color: #d4af37;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.product-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 4rem;
+}
+
+.product-images {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.main-image {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.main-image img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+}
+
+.image-thumbnails {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.thumbnail {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: border-color 0.3s ease;
+}
+
+.thumbnail.active {
+    border-color: #d4af37;
+}
+
+.thumbnail:hover {
+    border-color: #d4af37;
+}
+
+.product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.product-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.product-model {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.product-category a {
+    color: #d4af37;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.product-price-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-top: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.product-price {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #d4af37;
+}
+
+.availability-status {
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.availability-status.in_stock {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.availability-status.out_of_stock {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.availability-status.pre_order {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.product-description h3,
+.product-features h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.product-description p {
+    line-height: 1.6;
+    color: #666;
+}
+
+.features-list {
+    list-style: none;
+    padding: 0;
+}
+
+.features-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: #666;
+}
+
+.features-list i {
+    color: #d4af37;
+    font-size: 0.9rem;
+}
+
+.product-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-large {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+.product-meta p {
+    margin-bottom: 0.5rem;
+    color: #666;
+}
+
+.related-section {
+    background: #f8f9fa;
+    padding: 4rem 0;
+}
+
+@media (max-width: 768px) {
+    .product-detail-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .product-title {
+        font-size: 2rem;
+    }
+    
+    .product-price {
+        font-size: 1.5rem;
+    }
+    
+    .product-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        text-align: center;
+    }
+    
+    .main-image img {
+        height: 300px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changeImage(imageSrc) {
+    const mainImage = document.getElementById('main-product-image');
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    
+    mainImage.src = imageSrc;
+    
+    thumbnails.forEach(thumb => {
+        thumb.classList.remove('active');
+        if (thumb.src === imageSrc) {
+            thumb.classList.add('active');
+        }
+    });
+}
+</script>
+{% endblock %}

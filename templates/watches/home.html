@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}LuxTime - Premium Luxury Watches{% endblock %}
+
+{% block content %}
+<!-- Dynamic Slider -->
+{% if sliders %}
+<section class="hero-section">
+    <div class="hero-slider">
+        {% for slider in sliders %}
+        <div class="hero-slide {% if forloop.first %}active{% endif %}" data-slide="{{ forloop.counter0 }}">
+            <div class="hero-image">
+                {% if slider.image %}
+                <img src="{{ slider.image.url }}" alt="{{ slider.title }}">
+                {% else %}
+                <img src="{% static 'images/default-banner.jpg' %}" alt="Default Banner">
+                {% endif %}
+                <div class="hero-overlay"></div>
+            </div>
+            <div class="hero-content">
+                <div class="container">
+                    <div class="hero-text animate-slide-up">
+                        <h1 class="hero-title">{{ slider.title }}</h1>
+                        {% if slider.subtitle %}
+                        <p class="hero-subtitle">{{ slider.subtitle }}</p>
+                        {% endif %}
+                        {% if slider.description %}
+                        <p class="hero-description">{{ slider.description }}</p>
+                        {% endif %}
+                        {% if slider.button_url and slider.button_text %}
+                        <a href="{{ slider.button_url }}" class="btn btn-primary btn-glow">{{ slider.button_text }}</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if sliders|length > 1 %}
+    <div class="hero-controls">
+        <button class="hero-prev" id="hero-prev">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="hero-nav">
+            {% for slider in sliders %}
+            <button class="hero-dot {% if forloop.first %}active{% endif %}" data-slide="{{ forloop.counter0 }}"></button>
+            {% endfor %}
+        </div>
+        <button class="hero-next" id="hero-next">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+    {% endif %}
+
+    <div class="hero-progress">
+        <div class="hero-progress-bar" id="hero-progress"></div>
+    </div>
+</section>
+{% endif %}
+
+<!-- 3D Watch Showcase -->
+<section class="watch-3d-section">
+    <div class="container">
+        <div class="watch-3d-content">
+            <div class="watch-3d-text">
+                <h2>Luxury Timepieces</h2>
+                <p>Experience the art of precision with our handcrafted luxury watches. Each piece represents decades of horological excellence.</p>
+                <a href="{% url 'watches:watch_list' %}" class="btn btn-primary btn-glow">Explore Collection</a>
+            </div>
+            <div class="watch-3d-container">
+                <model-viewer 
+                    src="{% static 'images/3dwatch.glb' %}"
+                    alt="Luxury Watch 3D Model"
+                    auto-rotate
+                    camera-controls
+                    shadow-intensity="1"
+                    exposure="1"
+                    shadow-softness="0.5"
+                    class="watch-3d-model">
+                </model-viewer>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+{% if categories %}
+<section class="categories-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Shop by Category</h2>
+            <p>Discover our premium collections</p>
+        </div>
+        <div class="categories-grid">
+            {% for category in categories %}
+            <div class="category-card">
+                <a href="{{ category.get_absolute_url }}">
+                    <div class="category-image">
+                        {% if category.image %}
+                            <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                        {% else %}
+                            <img src="{% static 'images/default-category.jpg' %}" alt="Default Category">
+                        {% endif %}
+                    </div>
+                    <div class="category-content">
+                        <h3>{{ category.name }}</h3>
+                        {% if category.description %}
+                            <p>{{ category.description|truncatewords:20 }}</p>
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+<!-- Featured Watches -->
+{% if featured_watches %}
+<section class="featured-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Featured Watches</h2>
+            <p>Handpicked premium timepieces</p>
+        </div>
+        <div class="products-grid">
+            {% for watch in featured_watches %}
+            <div class="product-card">
+                <a href="{{ watch.get_absolute_url }}">
+                    <div class="product-image">
+                        {% if watch.image and watch.image.url %}
+                        <img src="{{ watch.image.url }}" alt="{{ watch.name }}">
+                        {% else %}
+                        <img src="{% static 'images/default-watch.jpg' %}" alt="No image available">
+                        {% endif %}
+                        <div class="product-overlay">
+                            <span class="view-details">View Details</span>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">{{ watch.name }}</h3>
+                        <p class="product-model">{{ watch.model_number }}</p>
+                        <p class="product-price">${{ watch.price }}</p>
+                        {% if watch.availability != 'in_stock' %}
+                        <span class="availability-badge {{ watch.availability }}">{{ watch.get_availability_display }}</span>
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="section-footer">
+            <a href="{% url 'watches:watch_list' %}" class="btn btn-outline">View All Watches</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Promotional Text -->
+<!-- {% if promotional_texts %}
+<section class="promo-section">
+    <div class="container">
+        {% for promo in promotional_texts %}
+        <div class="promo-card">
+            <h3>{{ promo.title }}</h3>
+            <p>{{ promo.content }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %} -->
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Model viewer enhancements
+    const modelViewer = document.querySelector('model-viewer');
+    
+    if (modelViewer) {
+        // Add loading indicator
+        modelViewer.addEventListener('load', function() {
+            console.log('3D watch model loaded successfully');
+        });
+        
+        modelViewer.addEventListener('error', function(event) {
+            console.error('Error loading 3D model:', event.detail);
+        });
+        
+        // Optional: Add interaction hints
+        modelViewer.addEventListener('camera-change', function() {
+            // Model is being interacted with
+        });
+    }
+    
+    // Hero slider functionality (if banners exist)
+    const heroSlider = document.querySelector('.hero-slider');
+    const heroDots = document.querySelectorAll('.hero-dot');
+    const heroNext = document.getElementById('hero-next');
+    const heroPrev = document.getElementById('hero-prev');
+    const heroProgress = document.getElementById('hero-progress');
+    
+    if (heroSlider && heroDots.length > 0) {
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.hero-slide');
+        const totalSlides = slides.length;
+        let autoPlayInterval;
+        
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            heroDots.forEach(dot => dot.classList.remove('active'));
+            
+            if (slides[index]) slides[index].classList.add('active');
+            if (heroDots[index]) heroDots[index].classList.add('active');
+            
+            currentSlide = index;
+        }
+        
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            showSlide(currentSlide);
+        }
+        
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(currentSlide);
+        }
+        
+        // Auto play
+        function startAutoPlay() {
+            autoPlayInterval = setInterval(nextSlide, 5000);
+        }
+        
+        function stopAutoPlay() {
+            clearInterval(autoPlayInterval);
+        }
+        
+        // Event listeners
+        if (heroNext) {
+            heroNext.addEventListener('click', function() {
+                nextSlide();
+                stopAutoPlay();
+                startAutoPlay();
+            });
+        }
+        
+        if (heroPrev) {
+            heroPrev.addEventListener('click', function() {
+                prevSlide();
+                stopAutoPlay();
+                startAutoPlay();
+            });
+        }
+        
+        heroDots.forEach((dot, index) => {
+            dot.addEventListener('click', function() {
+                showSlide(index);
+                stopAutoPlay();
+                startAutoPlay();
+            });
+        });
+        
+        // Start auto play
+        startAutoPlay();
+        
+        // Pause on hover
+        heroSlider.addEventListener('mouseenter', stopAutoPlay);
+        heroSlider.addEventListener('mouseleave', startAutoPlay);
+    }
+});
+</script>
+{% endblock %}
